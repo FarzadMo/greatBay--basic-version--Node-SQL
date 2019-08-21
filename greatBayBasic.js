@@ -86,3 +86,72 @@ function postAuction(){
 
         });
 }
+
+
+function bidAuction(){
+
+    connection.query("SELECT * FROM auction",
+        function (err, result){
+            if(err) throw err;
+
+            inquirer
+                .prompt([
+                    {
+                        name: "choices",
+                        type: "rawlist",
+                        choices: function (){
+                            var dataArray = [];
+
+                            for (var i=0 ; i< result.length ; i++){
+                                dataArray.push(result[i].item_name);
+                            }
+                        }
+                    },
+                    {
+                        name: "bid",
+                        type: "input",
+                        message: "how much you want to bid?"
+                    }
+
+                ]).then(function(answer){
+
+                    var chosenItem;
+
+                    for (var i=0; i<result.length; i++){
+                        if(answer.choices === result[i].item_name){
+                            chosenItem =  result [i];
+                        } return chosenItem;
+                    }
+
+                    if(chosenItem.highest_bid < parseInt (answer.bid)){
+                        connection.query(
+                            "UPDATE auction SET ? WHERE ?",
+                            [
+                                {
+                                    id: chosenItem.id
+                                },
+                                {
+                                    highest_bid: answer.bid
+                                }
+                            ],
+                            function (err){
+                                if(err) throw err;
+
+                                start();
+                            }
+                        );
+                    } else {
+                        start ();
+                    }
+                });
+
+        }
+    );
+}
+
+
+
+
+
+
+
